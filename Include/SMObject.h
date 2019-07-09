@@ -1,7 +1,5 @@
 #ifndef SMOBJECT_H
 #define SMOBJECT_H
-#include <Windows.h>
-#include <tchar.h>
 #include <string>
 
 #ifndef UNICODE  
