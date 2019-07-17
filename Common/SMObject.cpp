@@ -1,4 +1,4 @@
-#include "../Include/SMObject.h"
+#include <SMObject.h>
 
 //Code framework by A/Prof. J.Katupitiya(c)2013
 HANDLE SMCreateReadWrite(int objectSize, TCHAR szName[])

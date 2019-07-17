@@ -17,13 +17,12 @@ int main(int argc, char* argv[])
     
 	shm = SMCreate(LASER_KEY,sizeof(Laser));
 
-	Lsr.numData = 40;
-	Lsr.data[0] = 10;
-// Write to SM
+// Read from SM
 	Lsrptr = (Laser *)shm;
-	Lsrptr->numData = Lsr.numData;
-	Lsrptr->data[0] = Lsr.data[0];
-	while(getchar()!= 'Q');
+	Lsr.numData = Lsrptr->numData;
+	Lsr.data[0] = Lsrptr->data[0];
+	printf("Lat = %10.3f, Long = %10.3f \n", Lsr.numData, Lsr.data[0]);
 	shmdt(shm);
 	return 0;
 }
+

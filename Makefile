@@ -1,24 +1,24 @@
-FLAGS = 
-GPS = GPSModule/GPSMain.cpp
+
+#GPS = GPSModule/GPSMain.cpp
 PM = PMModule/PMMain.cpp
 DM = DisplayModule/*.cpp
-CMN = Common/*.cpp
-INC = Include/*.h
+LSR = LaserModule/LaserMain.cpp
+IDIR := -I/usr/local/include -I./Include
 
 # Make all the executables and put them in bin
-all: pm gps dm
+all: pm lsr dm
 
 # Make the process management module
 pm: $(PM)
-	g++ $(PM) $(INC) $(CMN) -o bin/pm
+	g++ $(PM) $(IDIR) -o bin/pm
 
 # Make the gps module
-gps: $(GPS)
-	g++ $(GPS) $(INC) $(CMN)-o bin/gps
+gps: $(LSR)
+	g++ $(LSR) $(IDIR) -o bin/lsr
 
 # Make the display module
 dm: $(DM)
-	g++ $(DM) $(INC) $(CMN) -o bin/dm -framework OpenGL -framework GLUT
+	g++ $(DM) $(IDIR) -o bin/dm -framework OpenGL -framework GLUT
 
 # TODO - add other modules here
 
