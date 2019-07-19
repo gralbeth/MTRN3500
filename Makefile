@@ -1,27 +1,15 @@
+CC := g++
+IDIR := -I/usr/local/include -I./include
+CMN := Common/SM.cpp
 
-#GPS = GPSModule/GPSMain.cpp
-PM = PMModule/PMMain.cpp
-DM = DisplayModule/*.cpp
-LSR = LaserModule/LaserMain.cpp
-IDIR := -I/usr/local/include -I./Include
+all: pmmain lsrmain
 
-# Make all the executables and put them in bin
-all: pm lsr dm
+pmmain: PMModule/PMMain.cpp
+	${CC} ${IDIR} ${CMN} PMModule/PMMain.cpp -o bin/pm
 
-# Make the process management module
-pm: $(PM)
-	g++ $(PM) $(IDIR) -o bin/pm
+lsrmain: LaserModule/LaserMain.cpp
+	${CC} ${IDIR} ${CMN} LaserModule/LaserMain.cpp -o bin/lsr
 
-# Make the gps module
-gps: $(LSR)
-	g++ $(LSR) $(IDIR) -o bin/lsr
-
-# Make the display module
-dm: $(DM)
-	g++ $(DM) $(IDIR) -o bin/dm -framework OpenGL -framework GLUT
-
-# TODO - add other modules here
-
-# Clean up
 clean:
-	rm -rf bin/*
+	rm -rvf *.outs
+
