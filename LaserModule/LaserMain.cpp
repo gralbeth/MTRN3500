@@ -17,11 +17,11 @@ int main(int argc, char* argv[])
     void* SMpm;
     PM* PMPtr; 
     
-	SMlsr = SMCreate(LASER_KEY,sizeof(Laser));
+//	SMlsr = SMCreate(LASER_KEY,sizeof(Laser));
     SMpm = SMCreate(PM_KEY,sizeof(PM));
 // Read from SM
     PMPtr = (PM*)SMpm;
-    PMPtr->Heartbeats.Flags.Laser = 1;
+    //PMPtr->Heartbeats.Flags.Laser = 0;
 
     /* 
 	Lsrptr = (Laser *)SMlsr;
@@ -29,10 +29,13 @@ int main(int argc, char* argv[])
 	Lsr.data[0] = Lsrptr->data[0];
 	printf("numData = %d, Data = %d \n", Lsr.numData, Lsr.data[0]);
     */
-    while(1) {
-        if (PMPtr->Heartbeats.Flags.Laser == 0) {
+    printf("PMPtr->Shudown flag laser: %d\n", PMPtr->Shutdown.Flags.Laser);
+    while(!PMPtr->Shutdown.Flags.Laser) {
+        //printf("Entered laser while loop\n");
+        if (PMPtr->Heartbeats.Flags.Laser == 0) 
             PMPtr->Heartbeats.Flags.Laser = 1;
-        }
+        if (PMPtr->PMHeartbeats.Flags.PM == 1) 
+            PMPtr->PMHeartbeats.Flags.PM = 0;
         usleep(20);
     }
 

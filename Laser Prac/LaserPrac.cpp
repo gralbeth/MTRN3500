@@ -9,24 +9,46 @@
 //#include <bits/stdc++.h>
 #include <bitset>
 
-#define NO_POINTS 25
+#define NUM_POINTS 25
+#define SCALING 21
 #define STARTING_ANGLE 23
-#define RESOLUTION 24
+#define STEP_WIDTH 24
 #define POINTS 26
 #define DEG2RAD 3.14159265358972/100.0
+
+#define STEP_WIDTH 0.5
+
+
+bool getDataPacket();
+void saveData();
 
 struct Data {
     double X;
     double Y;
 };
 
+class Laser {
+    private:
+    std::string ip_addr;
+    int portNum;
+    char serverPacket[4000];
 
+    public:
+    int numData;
+    Data Values[361];
+
+     ~Laser() {}
+    Laser();
+    Laser(std::string ip_addr,int portNum);
+    bool getDataPacket();
+    void saveData();
+};
 
 int main(int argc , char *argv[])
 {
     int sock;
     struct sockaddr_in server;
-    char message[1000] , server_reply[2000];
+    char message[1000] , server_reply[4000];
      
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -61,7 +83,7 @@ int main(int argc , char *argv[])
         puts("recv failed");
     }
 
-    puts("Verif reply :");
+    puts("Verification reply :");
     puts(message);
 
     const char start[1] = {0x02};
@@ -78,6 +100,7 @@ int main(int argc , char *argv[])
 
     send(sock, end, 1, 0); // End transmission
 
+    usleep(200);
    // Recieve data
 
    bytes = recv(sock, server_reply, sizeof(server_reply),0);
@@ -88,75 +111,81 @@ int main(int argc , char *argv[])
     }
     
     // debug stuff to see what you receive
-    puts("Server reply :");
+    puts("Server data:");
     puts(server_reply);
-    std::cout << sizeof(server_reply) << std::endl;
-    
-    std::istringstream ss(server_reply);
-    std::cout << ss.str() << std::endl;
- 
+    std::cout << "----------------------------------" << std::endl;
+
+    char * strdata = server_reply;
+    char * msg;
+    msg = strtok(strdata," ");
+    std::stringstream ss;
+    u_int16_t vals[500] = {0};
     /* 
-    std::vector<char *> newData;
-    ss >> newData;
-    newData.push_back(strtok(server_reply," "));
-    while (newData != NULL) {
-        std::cout << std::hex << newData << std::endl;
-       // printf("%s\n", newData);
-        newData.push_back(strtok(server_reply," "));
-    }*/
-/*
- std::string dataStr;
-
-    // Dont want the first 30 entries
-    for (int i = 0; i < STARTING_ANGLE; i++) {
-        ss >> dataStr;
-         std::cout << "Angle: "<< std::hex << dataStr << std::endl;
+    for (int i = 0; i < 24; i++) {
+        msg = strtok(NULL," ");
     }
 
-    int data; 
-    ss >> std::hex >> data;
-    std::cout << "Angle: " << data << std::endl;
-     
-    ss >> std::hex >> data;
-    std::cout << "Angle: " << data << std::endl;
+    ss << std::hex << msg;
+    u_int16_t ang;
+    std::cout << ss.str() << std::endl;
+    ss >> ang;
+    std::cout << ang << std::endl;
+*/
 
-    ss >> std::hex >> data;
-    std::cout << "Angle: " << data << std::endl;   
-    
-    //printf("%s\n", dataStr.c_str());
- */
-    
-   
- 
-    //keep communicating with server
-    while(1)
-    {
-  
- 
-            //Begin parse scan
-
-        // printf("Enter message : ");
-        // scanf("%s" , message);
-         
-        // //Send some data
-        // if( send(sock , message , strlen(message) , 0) < 0)
-        // {
-        //     puts("Send failed");
-        //     return 1;
-        // }
-        
-        // bytes = recv(sock , server_reply , 2000 , 0);
-        // //Receive a reply from the server
-        // if( bytes < 0)
-        // {
-        //     puts("recv failed");
-        //     break;
-        // }
-         
-        // puts("Server reply :");
-        // puts(server_reply);
+    for (int i = 0; i < NUM_POINTS; i++) {
+        msg = strtok(NULL," ");
     }
+
+    ss << std::hex << msg;
+    u_int16_t numData;
+    ss >> numData;
+    std::cout << "NumData: " << numData << std::endl;
+
+    std::cout << "-----------------" << std::endl;
+ 
+    char * Pointdata = server_reply;
+    char * dat;
+    std::stringstream str(server_reply);
+    std::stringstream str1;
+    u_int16_t val;
+
+    for (int i = 0; i < numData; i++) {
+        dat = strtok(NULL," ");
+        val = 0;
+        if (dat != NULL) {
+            std::cout << i << ": " << dat << std::endl;
+            str1 << std::hex << dat;
+            str1 >> vals[i];
+            str1.clear();
+            std::cout << "Polar val array: " << vals[i] << std::endl;
+         }
+     }
+
+    // Vals array now holds polar values
+
+
+   // std::istringstream ss(server_reply);
+   // std::cout << ss.str() << std::endl;
      
     close(sock);
     return 0;
 }
+    
+/* 
+   
+
+bool Laser::getDataPacket() {
+    return 0;
+}
+
+void Laser::saveData() {
+
+}
+
+Laser::Laser(std::string ip_addr,int portNum) {
+     this->ip_addr = ip_addr;
+     this->portNum = portNum;
+ }
+ 
+ 
+*/

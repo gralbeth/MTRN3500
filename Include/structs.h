@@ -22,13 +22,15 @@ Unused:3;
 
 union ExecFlags
 {
+//unsigned char Status;
 unsigned char Status;
 ModuleFlags Flags;
 };
 
 struct PM {
-    ExecFlags Heartbeats;
     ExecFlags Shutdown;
+    ExecFlags Heartbeats;
+    ExecFlags PMHeartbeats;
 };
 
 struct Laser {
