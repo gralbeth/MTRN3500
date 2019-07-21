@@ -24,8 +24,6 @@ int main(int argc, char* argv[])
     int val = startProcess((char*)"bin/laser.sh");
 //PM
     PMPtr = (PM *)SMpm;
-    PMPtr->Heartbeats.Status = 0x00;
-    PMPtr->Heartbeats.Flags.Laser = 0;
     PMPtr->Shutdown.Status = 0x00;
     PMPtr->Shutdown.Flags.PM = 0;
     printf("Setting shutdown status: %d\n",PMPtr->Shutdown.Status);
@@ -39,25 +37,24 @@ int main(int argc, char* argv[])
     printf("Setting shutdown 3: %d\n",PMPtr->Shutdown.Status);*/
     //usleep(1000);
 
-    // milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
-    int64_t ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
-   // unsigned __int64 now = duration_cast<:milliseconds>(system_clock::now().time_since_epoch()).count();
+    auto start = std::chrono::system_clock::now();
+    usleep(1000);
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
+   // std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+   // std::cout << "finished computation at " << std::ctime(&end_time)
+    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+
+    long int ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
     std::cout << "MS: " << ms << std::endl;
-    usleep(900);
+    usleep(1000);
     ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
     std::cout << "MS post 1000 sleep: " << ms << std::endl;
 
     while(!PMPtr->Shutdown.Flags.PM) { 
         usleep(50);
         //printf("Laser Heartbeat: %d\n",PMPtr->Heartbeats.Flags.Laser);
-        if (PMPtr->Heartbeats.Flags.Laser == 1) {
-            //printf("Resetting heartbeat flag\n");
-            PMPtr->Heartbeats.Flags.Laser = 0;
-        }
-        // else { // Laser heartbeat not updated, assuming laser critical
-        //     printf("Laser heartbeat not updated\n");
-        //     PMPtr->Shutdown.Status = 0xFF;
-        // }
+      
         if (kbhit()) {
             getchar();
             printf("Key hit\n");

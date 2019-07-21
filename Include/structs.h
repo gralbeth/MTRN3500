@@ -20,6 +20,14 @@ Vehicle:1,
 Unused:3;
 };
 
+struct Timestamps {
+    double PM;
+    double GPS;
+    double Laser;
+    double Xbox;
+    double Vehicle;
+};
+
 union ExecFlags
 {
 //unsigned char Status;
@@ -29,8 +37,9 @@ ModuleFlags Flags;
 
 struct PM {
     ExecFlags Shutdown;
-    ExecFlags Heartbeats;
-    ExecFlags PMHeartbeats;
+    Timestamps Tstamps;
+    //ExecFlags Heartbeats;
+    //ExecFlags PMHeartbeats;
 };
 
 struct Laser {

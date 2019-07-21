@@ -187,6 +187,9 @@ void Laser::processDataPacket() {
 void Laser::polarToXY() {
     for (int i = 0; i < numData; i++) {
         double theta = START_ANGLE + i * RESOLUTION;
+        if (theta > 90) {
+            theta = theta - 90;
+        }
         Values[i].X = vals[i]/1000.0 * abs(cos(theta * DEG2RAD));
         Values[i].Y = vals[i]/1000.0 * abs(sin(theta * DEG2RAD));
         std::cout << "X Val for " << i << " " << Values[i].X <<  "\tY Val " << Values[i].Y << std::endl;
