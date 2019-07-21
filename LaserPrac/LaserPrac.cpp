@@ -8,19 +8,19 @@
 #include <vector>
 //#include <bits/stdc++.h>
 #include <bitset>
+#include <math.h>
 
 #define NUM_POINTS 25
 #define SCALING 21
 #define STARTING_ANGLE 23
 #define STEP_WIDTH 24
 #define POINTS 26
-#define DEG2RAD 3.14159265358972/100.0
+#define DEG2RAD 3.14159265358972/180.0
 
-#define STEP_WIDTH 0.5
+//#define STEP_WIDTH 0.5
+#define RESOLUTION 0.5
+#define START_ANGLE 0
 
-
-bool getDataPacket();
-void saveData();
 
 struct Data {
     double X;
@@ -29,28 +29,54 @@ struct Data {
 
 class Laser {
     private:
-    std::string ip_addr;
+    std::string ipAddr;
     int portNum;
+    int sock; 
     char serverPacket[4000];
+    char message[1000];
 
     public:
     int numData;
+    u_int16_t vals[361];
     Data Values[361];
 
      ~Laser() {}
     Laser();
     Laser(std::string ip_addr,int portNum);
     bool getDataPacket();
-    void saveData();
+    void processDataPacket();
+    void closeSock();
+    void polarToXY();
 };
+
 
 int main(int argc , char *argv[])
 {
-    int sock;
-    struct sockaddr_in server;
-    char message[1000] , server_reply[4000];
+    Laser lsr("192.168.1.200", 23000);
+    lsr.getDataPacket();
+    lsr.processDataPacket();
+    lsr.closeSock();
+  // lsr.polarToXY();
+  
+   
+    // Vals array now holds polar values
+
+
+   // std::istringstream ss(server_reply);
+   // std::cout << ss.str() << std::endl;
      
-    //Create socket
+    return 0;
+}
+
+Laser::Laser() {
+
+}
+    
+Laser::Laser(std::string ip_addr,int portNum) {
+    ipAddr = ip_addr;
+    this->portNum = portNum;
+    struct sockaddr_in server;
+
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
     {
@@ -58,19 +84,26 @@ int main(int argc , char *argv[])
     }
     puts("Socket created");
      
-    server.sin_addr.s_addr = inet_addr("192.168.1.200");
+    server.sin_addr.s_addr = inet_addr(ipAddr.c_str());
     server.sin_family = AF_INET;
-    server.sin_port = htons( 23000 );
+    server.sin_port = htons( portNum );
  
     //Connect to remote server
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
         perror("connect failed. Error");
-        return 1;
+
     }
      
     puts("Connected\n");
 
+}
+   
+
+bool Laser::getDataPacket() {
+ 
+    //Create socket
+    
     // Verify connection via student number
     const char studentNumber[9] = "5061927\n";
     send(sock,studentNumber,strlen(studentNumber),0);
@@ -103,7 +136,7 @@ int main(int argc , char *argv[])
     usleep(200);
    // Recieve data
 
-   bytes = recv(sock, server_reply, sizeof(server_reply),0);
+   bytes = recv(sock, serverPacket, sizeof(serverPacket),0);
 
     if( bytes < 0)
     {
@@ -112,40 +145,29 @@ int main(int argc , char *argv[])
     
     // debug stuff to see what you receive
     puts("Server data:");
-    puts(server_reply);
+    puts(serverPacket);
     std::cout << "----------------------------------" << std::endl;
 
-    char * strdata = server_reply;
-    char * msg;
-    msg = strtok(strdata," ");
-    std::stringstream ss;
-    u_int16_t vals[500] = {0};
-    /* 
-    for (int i = 0; i < 24; i++) {
-        msg = strtok(NULL," ");
-    }
+    return 0;
+}
 
-    ss << std::hex << msg;
-    u_int16_t ang;
-    std::cout << ss.str() << std::endl;
-    ss >> ang;
-    std::cout << ang << std::endl;
-*/
+void Laser::processDataPacket() {
+    char * dataStr = serverPacket;
+    char * msg;
+    std::stringstream ss;
+    msg = strtok(dataStr," ");
 
     for (int i = 0; i < NUM_POINTS; i++) {
         msg = strtok(NULL," ");
     }
 
     ss << std::hex << msg;
-    u_int16_t numData;
     ss >> numData;
     std::cout << "NumData: " << numData << std::endl;
 
     std::cout << "-----------------" << std::endl;
  
-    char * Pointdata = server_reply;
     char * dat;
-    std::stringstream str(server_reply);
     std::stringstream str1;
     u_int16_t val;
 
@@ -153,39 +175,26 @@ int main(int argc , char *argv[])
         dat = strtok(NULL," ");
         val = 0;
         if (dat != NULL) {
-            std::cout << i << ": " << dat << std::endl;
+            //std::cout << i << ": " << dat << std::endl;
             str1 << std::hex << dat;
             str1 >> vals[i];
             str1.clear();
-            std::cout << "Polar val array: " << vals[i] << std::endl;
+            std::cout << "Polar val #" << i << "\t" << vals[i] << std::endl;
          }
      }
-
-    // Vals array now holds polar values
-
-
-   // std::istringstream ss(server_reply);
-   // std::cout << ss.str() << std::endl;
-     
-    close(sock);
-    return 0;
-}
-    
-/* 
-   
-
-bool Laser::getDataPacket() {
-    return 0;
 }
 
-void Laser::saveData() {
-
+void Laser::polarToXY() {
+    for (int i = 0; i < numData; i++) {
+        double theta = START_ANGLE + i * RESOLUTION;
+        Values[i].X = vals[i]/1000.0 * abs(cos(theta * DEG2RAD));
+        Values[i].Y = vals[i]/1000.0 * abs(sin(theta * DEG2RAD));
+        std::cout << "X Val for " << i << " " << Values[i].X <<  "\tY Val " << Values[i].Y << std::endl;
+    }
 }
-
-Laser::Laser(std::string ip_addr,int portNum) {
-     this->ip_addr = ip_addr;
-     this->portNum = portNum;
+ 
+ void Laser::closeSock() {
+     close(sock);
  }
+
  
- 
-*/

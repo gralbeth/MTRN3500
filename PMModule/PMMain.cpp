@@ -1,8 +1,12 @@
 #include <structs.h>
 #include <SM.h>
 #include <unistd.h>
+#include <chrono>
+#include <iostream>
 
 using namespace std;
+
+using namespace std::chrono;
 
 int startProcess(char* str);
 int kbhit();
@@ -35,11 +39,19 @@ int main(int argc, char* argv[])
     printf("Setting shutdown 3: %d\n",PMPtr->Shutdown.Status);*/
     //usleep(1000);
 
+    // milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+    int64_t ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
+   // unsigned __int64 now = duration_cast<:milliseconds>(system_clock::now().time_since_epoch()).count();
+    std::cout << "MS: " << ms << std::endl;
+    usleep(900);
+    ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
+    std::cout << "MS post 1000 sleep: " << ms << std::endl;
+
     while(!PMPtr->Shutdown.Flags.PM) { 
         usleep(50);
-        printf("Laser Heartbeat: %d\n",PMPtr->Heartbeats.Flags.Laser);
+        //printf("Laser Heartbeat: %d\n",PMPtr->Heartbeats.Flags.Laser);
         if (PMPtr->Heartbeats.Flags.Laser == 1) {
-            printf("Resetting heartbeat flag\n");
+            //printf("Resetting heartbeat flag\n");
             PMPtr->Heartbeats.Flags.Laser = 0;
         }
         // else { // Laser heartbeat not updated, assuming laser critical
@@ -47,6 +59,7 @@ int main(int argc, char* argv[])
         //     PMPtr->Shutdown.Status = 0xFF;
         // }
         if (kbhit()) {
+            getchar();
             printf("Key hit\n");
             PMPtr->Shutdown.Status = 0xFF;
         }
@@ -64,6 +77,7 @@ int main(int argc, char* argv[])
         printf("SMpm detach failed\n");
     }
     shmctl(PM_KEY, IPC_RMID, NULL);
+
 	return 0;
 }
 
@@ -82,9 +96,9 @@ int startProcess(char* str) {
     }
 
 int kbhit() {
- struct timeval tv = { 0L, 0L };
- fd_set fds;
- FD_ZERO(&fds);
- FD_SET(0, &fds);
- return select(1, &fds, NULL, NULL, &tv);
+    struct timeval tv = { 0L, 0L };
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(0, &fds);
+    return select(1, &fds, NULL, NULL, &tv);
 }

@@ -1,1 +1,1 @@
-exec open -a Terminal /Users/TamarJacobs/Documents/UNI\ 2019/T2/MTRN3500/Assignment2/bin/lsr
+exec open -a Terminal /Users/TamarJacobs/Documents/UNI\ 2019/T2/MTRN3500/Assignment2/bin/lsrprac
