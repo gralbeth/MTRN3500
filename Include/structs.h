@@ -9,6 +9,7 @@
 
 #define LASER_KEY 111
 #define PM_KEY 222
+#define BUFFER_TIME 50
 
 struct ModuleFlags
 {
@@ -37,9 +38,9 @@ ModuleFlags Flags;
 
 struct PM {
     ExecFlags Shutdown;
-    Timestamps Tstamps;
-    //ExecFlags Heartbeats;
-    //ExecFlags PMHeartbeats;
+    //Timestamps Tstamps;
+    ExecFlags Heartbeats;
+    ExecFlags PMHeartbeats;
 };
 
 struct Laser {

@@ -7,8 +7,8 @@ all: pmmain lsrmain
 pmmain: PMModule/PMMain.cpp
 	${CC} ${IDIR} ${CMN} PMModule/PMMain.cpp -o bin/pm
 
-lsrmain: LaserPrac/LaserPrac.cpp
-	${CC} ${IDIR} ${CMN} LaserPrac/LaserPrac.cpp -o bin/lsrprac
+lsrmain: LaserModule/LaserMain.cpp
+	${CC} ${IDIR} ${CMN} LaserModule/LaserMain.cpp -o bin/lsr
 
 clean:
 	rm -rvf *.out

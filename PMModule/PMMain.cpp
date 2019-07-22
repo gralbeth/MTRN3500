@@ -5,7 +5,6 @@
 #include <iostream>
 
 using namespace std;
-
 using namespace std::chrono;
 
 int startProcess(char* str);
@@ -22,39 +21,32 @@ int main(int argc, char* argv[])
 
 //Beginning LaserMain
     int val = startProcess((char*)"bin/laser.sh");
+    int wait = 0;
 //PM
     PMPtr = (PM *)SMpm;
     PMPtr->Shutdown.Status = 0x00;
     PMPtr->Shutdown.Flags.PM = 0;
+    PMPtr->Heartbeats.Status = 0x00;
     printf("Setting shutdown status: %d\n",PMPtr->Shutdown.Status);
-//Assigns laser values in SM - modifies pm for some reason
-	/* 
-    Lsrptr = (Laser *)SMlsr;
-    printf("Setting shutdown 1: %d\n",PMPtr->Shutdown.Status);
-	Lsrptr->numData = 450;
-    printf("Setting shutdown 2: %d\n",PMPtr->Shutdown.Status);
-	Lsrptr->data[0] = 80;
-    printf("Setting shutdown 3: %d\n",PMPtr->Shutdown.Status);*/
-    //usleep(1000);
-
-    auto start = std::chrono::system_clock::now();
-    usleep(1000);
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end-start;
-   // std::time_t end_time = std::chrono::system_clock::to_time_t(end);
-   // std::cout << "finished computation at " << std::ctime(&end_time)
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-
     long int ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
-    std::cout << "MS: " << ms << std::endl;
-    usleep(1000);
-    ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
-    std::cout << "MS post 1000 sleep: " << ms << std::endl;
-
+    std::cout << "Time before sleep: " << ms << std::endl;
+    usleep(2000000);
+    
     while(!PMPtr->Shutdown.Flags.PM) { 
-        usleep(50);
-        //printf("Laser Heartbeat: %d\n",PMPtr->Heartbeats.Flags.Laser);
-      
+        printf("Laser Heartbeat: %d\n",PMPtr->Heartbeats.Flags.Laser);
+        usleep(20000);
+        if (PMPtr->Heartbeats.Flags.Laser == 1) {
+            wait = 0;
+            PMPtr->Heartbeats.Flags.Laser = 0;
+        } 
+        else {
+            //Wait more, check again
+            if (++wait > BUFFER_TIME) {
+                printf("Heartbeat not reset\n");
+                PMPtr->Shutdown.Status = 0xFF;
+            }
+           // wait++;
+        }
         if (kbhit()) {
             getchar();
             printf("Key hit\n");
@@ -99,3 +91,19 @@ int kbhit() {
     FD_SET(0, &fds);
     return select(1, &fds, NULL, NULL, &tv);
 }
+
+/*
+auto start = std::chrono::system_clock::now();
+    usleep(1000);
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
+   // std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+   // std::cout << "finished computation at " << std::ctime(&end_time)
+    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+
+    long int ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
+    std::cout << "MS: " << ms << std::endl;
+    usleep(1000);
+    ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
+    std::cout << "MS post 1000 sleep: " << ms << std::endl;
+ */

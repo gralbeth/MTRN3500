@@ -32,7 +32,7 @@ class Laser {
     std::string ipAddr;
     int portNum;
     int sock; 
-    char serverPacket[4000];
+    char serverPacket[2048];
     char message[1000];
 
     public:
@@ -52,11 +52,15 @@ class Laser {
 
 int main(int argc , char *argv[])
 {
-    Laser lsr("192.168.1.200", 23000);
-    lsr.getDataPacket();
-    lsr.processDataPacket();
-    lsr.closeSock();
-  // lsr.polarToXY();
+    Laser lsr("192.168.1.200", 23000); // Initial setup
+    int ret = lsr.getDataPacket(); // Send 0x02, sRN..., 0x03 to request and recieve data packet
+    if (ret != 0) {
+        std::cout << "Data packed fail" << std::endl;
+        return 0;
+    }
+    lsr.processDataPacket(); // Convert from Hex to polar
+    lsr.closeSock(); 
+   lsr.polarToXY(); // Polar to XY cartesian
   
    
     // Vals array now holds polar values
@@ -111,6 +115,7 @@ bool Laser::getDataPacket() {
     int bytes;
     bytes = recv(sock, message, sizeof(message),0);
 
+    //1750
     if( bytes < 0)
     {
         puts("recv failed");
@@ -137,10 +142,16 @@ bool Laser::getDataPacket() {
    // Recieve data
 
    bytes = recv(sock, serverPacket, sizeof(serverPacket),0);
-
-    if( bytes < 0)
-    {
-        puts("recv failed");
+    std::cout << "Bytes: " << bytes << std::endl;
+    while (bytes < 1750) {
+        send(sock,start,1,0); // Start transmission
+        bytes = send(sock, reqData, strlen(reqData), 0);
+        if (bytes < 0) {
+            puts("Request failed");
+        }
+        send(sock, end, 1, 0);
+        std::cout << "Bytes: " << bytes << std::endl;
+        bytes = recv(sock, serverPacket, sizeof(serverPacket),0);
     }
     
     // debug stuff to see what you receive
@@ -186,12 +197,10 @@ void Laser::processDataPacket() {
 
 void Laser::polarToXY() {
     for (int i = 0; i < numData; i++) {
-        double theta = START_ANGLE + i * RESOLUTION;
-        if (theta > 90) {
-            theta = theta - 90;
-        }
-        Values[i].X = vals[i]/1000.0 * abs(cos(theta * DEG2RAD));
-        Values[i].Y = vals[i]/1000.0 * abs(sin(theta * DEG2RAD));
+        double theta = START_ANGLE + (double)i * RESOLUTION;
+
+        Values[i].X = (double)vals[i]/1000.0 * cos(theta * DEG2RAD);
+        Values[i].Y = (double)vals[i]/1000.0 * sin(theta * DEG2RAD);
         std::cout << "X Val for " << i << " " << Values[i].X <<  "\tY Val " << Values[i].Y << std::endl;
     }
 }
