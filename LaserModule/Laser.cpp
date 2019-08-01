@@ -56,7 +56,6 @@ Laser::Laser(std::string ip_addr,int portNum, PM* PMPtr) {
     int bytes;
        // message[0] = '\0';
     bytes = recv(sock, message, sizeof(message),0);
- 
   
     if( bytes < 0)
     {
@@ -73,7 +72,7 @@ Laser::Laser(std::string ip_addr,int portNum, PM* PMPtr) {
 
 bool Laser::getDataPacket() {
     int bytes;
-   char buffer[ 256 ];
+    char buffer[ 256 ];
     const char start[1] = {0x02};
     const char end[1] = {0x03};
 

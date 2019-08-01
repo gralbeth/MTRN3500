@@ -21,8 +21,6 @@ int main(int argc, char* argv[])
 
     Laser lsr("192.168.1.200", LASER_PORT, PMPtr); // Initial setup
 
-
-    
     int lasRet = 0;
     //PMPtr->Heartbeats.Flags.Laser = 0;
 
@@ -30,7 +28,6 @@ int main(int argc, char* argv[])
     while(!PMPtr->Shutdown.Flags.Laser) {
    // while(true) {
         usleep(5000);
-        //printf("Entered laser while loop\n");
         PMPtr->Heartbeats.Flags.Laser = 1;
         long int ms1 = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
         std::cout << "Pre laser time: " << ms1 << std::endl;
@@ -46,8 +43,6 @@ int main(int argc, char* argv[])
         // if (PMPtr->Heartbeats.Flags.Laser == 0) 
         // std::cout << "Resetting laser heartbeat to 1" << std::endl;
         //     PMPtr->Heartbeats.Flags.Laser = 1;
-        if (PMPtr->PMHeartbeats.Flags.PM == 1) 
-            PMPtr->PMHeartbeats.Flags.PM = 0;
 
     }
     lsr.closeSock();

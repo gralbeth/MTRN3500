@@ -15,6 +15,12 @@
 #define PM_KEY 2222
 #define BUFFER_TIME 400
 
+#define NUM_PROCESSES 4 // PM, GPS, Laser, Display
+#define PM_INDX 0
+#define GPS_INDX 1
+#define LSR_INDX 2
+#define DISP_INDX 3
+
 struct ModuleFlags
 {
 unsigned char PM:1,
@@ -25,15 +31,6 @@ Vehicle:1,
 Display:1,
 Unused:2;
 };
-
-struct Timestamps {
-    double PM;
-    double GPS;
-    double Laser;
-    double Xbox;
-    double Vehicle;
-};
-
 
 union ExecFlags
 {
@@ -46,7 +43,6 @@ struct PM {
     ExecFlags Shutdown;
     //Timestamps Tstamps;
     ExecFlags Heartbeats;
-    ExecFlags PMHeartbeats;
 
     double XVals[361];
     double YVals[361];

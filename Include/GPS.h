@@ -1,7 +1,14 @@
 #include <structs.h>
 #include <iostream>
-#include<sys/socket.h>    //socket
-#include<arpa/inet.h> //inet_addr
+#include <sys/socket.h>    //socket
+#include <arpa/inet.h> //inet_addr
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 
 #define GPS_PORT 24000
 
@@ -13,15 +20,13 @@
 
 #define CRC32_POLYNOMIAL 0xEDB88320L
 
-struct GPS {
-    unsigned char Data[112]; //from this
-    double Northing; // to here
+struct GPSData {
+    double Northing; 
     double Easting;
     double Height;
-}
+    unsigned int CRC;
+};
 
-void GPSConnection();
-
-void GPSStoreData();
-
-void GPSPrintData();
+void GPSOps(int sock);
+int GPSConnect();
+void GPSDisconnect(int sock);

@@ -1,15 +1,23 @@
  
+#include <GPS.h>
+
 int main() {
     void* SMpm;
     PM* PMPtr; 
 
-
-    std::cout << "Laser opened at time: " << ms << std::endl;
-    
-//	SMlsr = SMCreate(LASER_KEY,sizeof(Laser));
     SMpm = SMCreate(PM_KEY,sizeof(PM));
 // Read from SM
     PMPtr = (PM*)SMpm;
+    int sock = GPSConnect();
+
+    while (!PMPtr->Shutdown.Flags.GPS) {
+        std::cout << "Resetting GPS heartbeat" << std::endl;
+        PMPtr->Heartbeats.Flags.GPS = 1;
+        GPSOps(sock);
+    }
+    GPSDisconnect(sock);
+    return 0;
+}
 
     // No need to authenticate
     // Begin with same IP addr and diff port num
@@ -19,5 +27,3 @@ int main() {
     // Sync bytes are 3 bytes
     // Data starts at 28th index
     // Take bytes and convert it to doubles - 8 bytes per double
-}
-

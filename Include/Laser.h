@@ -11,9 +11,9 @@
 #include <SM.h>
 #include <iostream>
 #include <chrono>
-#include<string>    //strlen
-#include<sys/socket.h>    //socket
-#include<arpa/inet.h> //inet_addr
+#include <string>    //strlen
+#include <sys/socket.h>    //socket
+#include <arpa/inet.h> //inet_addr
 #include <sstream> //stringstream lib
 #include <vector>
 #include <bitset>

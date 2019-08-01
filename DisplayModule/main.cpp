@@ -124,6 +124,11 @@ int main(int argc, char ** argv) {
 		delete vehicle;
 	}
 
+	if (PMSMPtr->Shutdown.Flags.Display) {
+		std::cout << "Shutdown recieved" << std::endl;
+		return 0;
+	}
+
 	return 0;
 }
 
@@ -134,8 +139,7 @@ void display() {
 	// -------------------------------------------------------------------------
 	std::cout << "PMSMPtr Shutdown Display Flag: " << (int)PMSMPtr->Shutdown.Flags.Display << std::endl;
 	if (!PMSMPtr->Shutdown.Flags.Display) {
-	//while(1) {
-		//cvStartWindowThread();
+		PMSMPtr->Heartbeats.Flags.Display = 1;
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glMatrixMode(GL_MODELVIEW);
@@ -164,7 +168,6 @@ void display() {
 		glutSwapBuffers();
 	}
 	else {
-		glutLeaveMainLoop();
 	}
 	std::cout << "Exiting display" << std::endl;
 	//glutDestroyWindow(0);

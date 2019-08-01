@@ -7,8 +7,15 @@ using namespace std::chrono;
 
 int startProcess(char* str);
 
+int waitCount[NUM_PROCESSES];
+
 int main(int argc, char* argv[])
 {
+    // Set all wait counts to zero
+    for (int i = 0; i < NUM_PROCESSES; i++) {
+        waitCount[i] = 0;
+    }
+
     PM* PMPtr; 
 	//Laser* Lsrptr;
 	void* SMlsr;
@@ -22,7 +29,8 @@ int main(int argc, char* argv[])
    // int val = startProcess((char*)"bin/laser.sh");
     int val = startProcess((char*)"bin/lsr");
     int val2 = startProcess((char*)"bin/dm");
-    int wait = 0;
+    int val3 = startProcess((char*)"bin/gps");
+
 //PM
     PMPtr = (PM *)SMpm;
     PMPtr->Shutdown.Status = 0x00;
@@ -40,18 +48,35 @@ int main(int argc, char* argv[])
         }
         
         usleep(20000);
+        // Update all heartbeats
         if (PMPtr->Heartbeats.Flags.Laser == 1) {
-            wait = 0;
+            waitCount[LSR_INDX] = 0;
             PMPtr->Heartbeats.Flags.Laser = 0;
-        } 
-        else {
-            //Wait more, check again
-            if (++wait > BUFFER_TIME) {
-                printf("Heartbeat not reset\n");
+        } else { //Wait more, check again     
+            if (++waitCount[LSR_INDX] > BUFFER_TIME) {
+                printf("LSR Heartbeat not reset\n");
                 PMPtr->Shutdown.Status = 0xFF;
             }
-           // wait++;
         }
+        if (PMPtr->Heartbeats.Flags.GPS == 1) {
+            waitCount[GPS_INDX] = 0;
+            PMPtr->Heartbeats.Flags.GPS = 0;
+        } else { //Wait more, check again     
+            if (++waitCount[GPS_INDX] > BUFFER_TIME) {
+                printf("GPS Heartbeat not reset\n");
+                PMPtr->Shutdown.Status = 0xFF;
+            }
+        }
+        if (PMPtr->Heartbeats.Flags.Display== 1) {
+            waitCount[DISP_INDX] = 0;
+            PMPtr->Heartbeats.Flags.Display = 0;
+        } else { //Wait more, check again     
+            if (++waitCount[DISP_INDX] > BUFFER_TIME) {
+                printf("Display Heartbeat not reset\n");
+                PMPtr->Shutdown.Status = 0xFF;
+            }
+        }
+
         if (kbhit()) {
             getchar();
             printf("Key hit\n");
