@@ -1,54 +1,62 @@
-// #include "../Include/SMObject.h"
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <Laser.h>
 #include <structs.h>
-#include <stdint.h>
-#include <SM.h>
+#include <kbhit.h>
 #include <iostream>
-#include <chrono>
-
-using namespace std::chrono;
 
 int main(int argc, char* argv[])
 {
-    long int ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
-    std::cout << "Laser opened at time: " << ms << std::endl;
-    Laser Lsr;
-	Laser* Lsrptr;
+    Laser* Lsrptr;
 	void* SMlsr;
     void* SMpm;
     PM* PMPtr; 
+
+
+    long int ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
+    std::cout << "Laser opened at time: " << ms << std::endl;
     
 //	SMlsr = SMCreate(LASER_KEY,sizeof(Laser));
     SMpm = SMCreate(PM_KEY,sizeof(PM));
 // Read from SM
     PMPtr = (PM*)SMpm;
+
+    Laser lsr("192.168.1.200", LASER_PORT, PMPtr); // Initial setup
+
+
+    
+    int lasRet = 0;
     //PMPtr->Heartbeats.Flags.Laser = 0;
 
-    printf("PMPtr->Shudown flag laser: %d\n", PMPtr->Shutdown.Flags.Laser);
+   // std::cout << "PMPtr->Shudown flag laser: " << PMPtr->Shutdown.Flags.Laser << std::endl;
     while(!PMPtr->Shutdown.Flags.Laser) {
-        usleep(50000);
+   // while(true) {
+        usleep(5000);
         //printf("Entered laser while loop\n");
         PMPtr->Heartbeats.Flags.Laser = 1;
+        long int ms1 = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
+        std::cout << "Pre laser time: " << ms1 << std::endl;
+        lasRet = lsr.LaserOps();
+        if (lasRet != 0) {
+            while(!kbhit());
+            return 0;
+        } //PMPtr->Shutdown.Status = 0xff;
 
+        
+        long int ms2 = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
+        std::cout << "Post laser time: " << ms2 << std::endl;
         // if (PMPtr->Heartbeats.Flags.Laser == 0) 
         // std::cout << "Resetting laser heartbeat to 1" << std::endl;
         //     PMPtr->Heartbeats.Flags.Laser = 1;
         if (PMPtr->PMHeartbeats.Flags.PM == 1) 
             PMPtr->PMHeartbeats.Flags.PM = 0;
+
     }
-    printf("Shutdown status high\n");
-	shmdt(SMlsr);
+    lsr.closeSock();
+    std::cout << "Shutdown status high" << std::endl;
+	//shmdt(SMlsr);
+    int detRet = shmdt(SMpm);
+    if (detRet != 0) {
+        std::cout << "SMpm detach failed" << std::endl;
+    }
+    shmctl(PM_KEY, IPC_RMID, NULL); 
 	return 0;
 }
-
-    /* 
-	Lsrptr = (Laser *)SMlsr;
-	Lsr.numData = Lsrptr->numData;
-	Lsr.data[0] = Lsrptr->data[0];
-	printf("numData = %d, Data = %d \n", Lsr.numData, Lsr.data[0]);
-    */

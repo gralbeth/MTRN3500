@@ -6,10 +6,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <SM.h>
+#include <chrono>
+#include <iostream>
+#include <ctime>
 
-#define LASER_KEY 111
-#define PM_KEY 222
-#define BUFFER_TIME 50
+#define LASER_KEY 1111
+#define PM_KEY 2222
+#define BUFFER_TIME 400
 
 struct ModuleFlags
 {
@@ -18,7 +22,8 @@ GPS:1,
 Laser:1,
 Xbox:1,
 Vehicle:1,
-Unused:3;
+Display:1,
+Unused:2;
 };
 
 struct Timestamps {
@@ -28,6 +33,7 @@ struct Timestamps {
     double Xbox;
     double Vehicle;
 };
+
 
 union ExecFlags
 {
@@ -41,12 +47,18 @@ struct PM {
     //Timestamps Tstamps;
     ExecFlags Heartbeats;
     ExecFlags PMHeartbeats;
+
+    double XVals[361];
+    double YVals[361];
 };
 
-struct Laser {
+struct LaserData {
     uint16_t numData;
     uint16_t data[50];    
 };
+
+
+
 
 struct GPS {
 
@@ -56,9 +68,6 @@ struct Display {
 
 };
 
-struct Vehicle {
-
-};
 
 struct Xbox {
 

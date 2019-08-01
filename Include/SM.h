@@ -8,5 +8,5 @@
 #include <structs.h>
 #include <stdint.h>
 
-void* SMCreate(int key,double size);
+void* SMCreate(key_t key, size_t size);
 

@@ -20,7 +20,6 @@
 	#include <unistd.h>
 #endif
 
-
 void drawUGV(double steerAngle)
 {
 	const float red = .8, green = .1, blue = .2;
@@ -99,7 +98,6 @@ void drawUGV(double steerAngle)
 		glVertex3fv(vertices[9]);
 	glEnd();
 
-
 	// draw wheels
 	glPushMatrix();
 		glColor3f(1,1,1);
@@ -132,8 +130,26 @@ void drawUGV(double steerAngle)
 	glPopMatrix();
 }
 
-MyVehicle::MyVehicle()
+MyVehicle::MyVehicle(PM* PMPtr)
 {
+	PMSMPtr = PMPtr;
+}
+
+void MyVehicle::drawLaser()
+{
+
+	glPushMatrix();
+	 //std::cout << "PMSMPtr -  X: " <<  PMSMPtr->XVals[i] << " Y: " << PMSMPtr->YVals[i] << std::endl;
+	std::cout << "X1: " << PMSMPtr->XVals[1] << " Y1: " << PMSMPtr->YVals[1] << std::endl;
+		for (int i = 0; i < 361; i++) {
+			glBegin(GL_LINES);
+			glColor3f(1,0,0);
+			glTranslatef(10,0,0);
+			glVertex3f(PMSMPtr->XVals[i],0, PMSMPtr->YVals[i]);
+    		glVertex3f(PMSMPtr->XVals[i], 1, PMSMPtr->YVals[i]);
+			glEnd();
+		}
+	glPopMatrix();
 }
 
 void MyVehicle::draw()
@@ -142,6 +158,7 @@ void MyVehicle::draw()
 	positionInGL();
 	
 	drawUGV(steering);
+	drawLaser();
 
 	glPopMatrix();
 }

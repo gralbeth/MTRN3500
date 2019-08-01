@@ -1,3 +1,4 @@
+#pragma once 
 
 #include <iostream>
 #include <cstdlib>
@@ -5,6 +6,9 @@
 #include <cstring>
 #include <sstream>
 #include <map>
+#include <structs.h>
+#include <SM.h>
+#include <kbhit.h>
 
 #ifdef __APPLE__
 	#include <OpenGL/gl.h>
@@ -63,10 +67,13 @@ int prev_mouse_y = -1;
 Vehicle * vehicle = NULL;
 double speed = 0;
 double steering = 0;
+PM* PMSMPtr;
 
 //int _tmain(int argc, _TCHAR* argv[]) {
 int main(int argc, char ** argv) {
 
+
+//TODO add if not shutdown 
 	const int WINDOW_WIDTH = 800;
 	const int WINDOW_HEIGHT = 600;
 
@@ -98,9 +105,19 @@ int main(int argc, char ** argv) {
 	//   with the name of the class you want to show as the current 
 	//   custom vehicle.
 	// -------------------------------------------------------------------------
-	vehicle = new MyVehicle();
+	PM* PMPtr; 
+	void* SMpm;
 
+	SMpm = SMCreate(PM_KEY, sizeof(PM)); //create shared memory to access Laser points
+	PMPtr = (PM*)SMpm;
+	PMSMPtr = PMPtr;
 
+	vehicle = new MyVehicle(PMPtr);
+
+	// for (int i = 0; i < 361; i++) { //Save from SM to MyVehicle class for access in drawing
+	// 	vehicle->LaserX[i] = PMPtr->XVals[i];
+	// 	vehicle->LaserY[i] = PMPtr->YVals[i];
+	// }
 	glutMainLoop();
 
 	if (vehicle != NULL) {
@@ -115,35 +132,43 @@ void display() {
 	// -------------------------------------------------------------------------
 	//  This method is the main draw routine. 
 	// -------------------------------------------------------------------------
+	std::cout << "PMSMPtr Shutdown Display Flag: " << (int)PMSMPtr->Shutdown.Flags.Display << std::endl;
+	if (!PMSMPtr->Shutdown.Flags.Display) {
+	//while(1) {
+		//cvStartWindowThread();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+		if(Camera::get()->isPursuitMode() && vehicle != NULL) {
+			double x = vehicle->getX(), y = vehicle->getY(), z = vehicle->getZ();
+			double dx = cos(vehicle->getRotation() * 3.141592765 / 180.0);
+			double dy = sin(vehicle->getRotation() * 3.141592765 / 180.0);
+			Camera::get()->setDestPos(x + (-3 * dx), y + 7, z + (-3 * dy));
+			Camera::get()->setDestDir(dx, -1, dy);
+		}
+		Camera::get()->updateLocation();
+		Camera::get()->setLookAt();
 
-	if(Camera::get()->isPursuitMode() && vehicle != NULL) {
-		double x = vehicle->getX(), y = vehicle->getY(), z = vehicle->getZ();
-		double dx = cos(vehicle->getRotation() * 3.141592765 / 180.0);
-		double dy = sin(vehicle->getRotation() * 3.141592765 / 180.0);
-		Camera::get()->setDestPos(x + (-3 * dx), y + 7, z + (-3 * dy));
-		Camera::get()->setDestDir(dx, -1, dy);
+		Ground::draw();
+		
+		// draw my vehicle
+		if (vehicle != NULL) {
+			vehicle->draw();
+		}
+
+		// draw HUD
+		HUD::Draw();
+
+		glutSwapBuffers();
 	}
-	Camera::get()->updateLocation();
-	Camera::get()->setLookAt();
-
-	Ground::draw();
-	
-	// draw my vehicle
-	if (vehicle != NULL) {
-		vehicle->draw();
-
+	else {
+		glutLeaveMainLoop();
 	}
-
-
-	// draw HUD
-	HUD::Draw();
-
-	glutSwapBuffers();
+	std::cout << "Exiting display" << std::endl;
+	//glutDestroyWindow(0);
+	//while(!kbhit());
 };
 
 void reshape(int width, int height) {
