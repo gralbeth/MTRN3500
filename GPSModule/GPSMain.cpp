@@ -1,17 +1,26 @@
  
 #include <GPS.h>
 
+#define WAIT_COUNT 50
+int waitCount;
+
+
 int main() {
     void* SMpm;
     PM* PMPtr; 
-
+    waitCount = 0;
     SMpm = SMCreate(PM_KEY,sizeof(PM));
 // Read from SM
     PMPtr = (PM*)SMpm;
     int sock = GPSConnect();
 
     while (!PMPtr->Shutdown.Flags.GPS) {
-        std::cout << "Resetting GPS heartbeat" << std::endl;
+        if (PMPtr->Heartbeats.Flags.GPS) {
+            if (++waitCount > WAIT_COUNT) {
+				std::cout << "GPS shutting down PM" << std::cout;
+                PMPtr->Shutdown.Status = 0xFF; // PM Failure
+            }
+        }
         PMPtr->Heartbeats.Flags.GPS = 1;
         GPSOps(sock);
     }

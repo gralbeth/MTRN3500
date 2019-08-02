@@ -4,7 +4,7 @@
 
 void GPSOps(int sock) {
    
-    usleep(100000);
+    usleep(10000);
     char Data[112];
     GPSData gps;
    // int ret = recv(sock, gps->Data, sizeof(gps),0);
@@ -13,31 +13,65 @@ void GPSOps(int sock) {
         std::cout << "GPS Data recv fail" << std::endl;
     } 
     std::cout << "Recieved " << ret << " bytes successfully" << std::endl;
-     
-    // Northing data
-	int start = NORTHING_INDEX;
-    unsigned char * BytePtr = NULL;
-    BytePtr = (unsigned char*)&gps.Northing;
-	for (int i = start; i < start + sizeof(double); i++) { 
-		*(BytePtr++) = Data[i]; 
-	}
+    // int begin;
+    // for (begin = 0; begin < ret; begin++) {
+    //     if (Data[begin] == 0xaa && Data[begin+1] == 0x44 && Data[begin+2] == 0x12) break;
+    // }
 
-    BytePtr = (unsigned char*)&gps.Easting; 
-	start = EASTING_INDEX;
-	for (int i = start; i < start + sizeof(double); i++) { 
-		*(BytePtr++) = Data[i]; 
-	}
+    // if (ret < sizeof(gps)) return;
 
-    BytePtr = (unsigned char*)&gps.Height; 
-	start = HEIGHT_INDEX;
-	for (int i = start; i < start + sizeof(double); i++) { 
-		*(BytePtr++) = Data[i]; 
-	}
+    // int headerLength = Data[begin + 3];
+    int headerLength = 0;
 
+    // // Northing data
+	// int start = headerLength + NORTHING_INDEX;
+    // unsigned char * BytePtr = NULL;
+    // BytePtr = (unsigned char*)&gps.Northing;
+	// for (int i = start; i < start + sizeof(double); i++) { 
+	// 	*(BytePtr++) = Data[i]; 
+	// }
+
+    // BytePtr = (unsigned char*)&gps.Easting; 
+	// start = headerLength + EASTING_INDEX;
+	// for (int i = start; i < start + sizeof(double); i++) { 
+	// 	*(BytePtr++) = Data[i]; 
+	// }
+
+    // BytePtr = (unsigned char*)&gps.Height; 
+	// start = headerLength + HEIGHT_INDEX;
+	// for (int i = start; i < start + sizeof(double); i++) { 
+	// 	*(BytePtr++) = Data[i]; 
+	// }
+
+    unsigned char * BytePtr = (unsigned char*)&gps;
+    unsigned char Buffer[sizeof(GPSData)];
+    for (int i = 0; i < sizeof(GPSData); i++) {
+        *(BytePtr+i) = Data[i];
+        Buffer[i] = Data[i]; 
+    }
+
+    std::cout << "Size of GPSData: " << sizeof(GPSData) << std::endl;
     std::cout << "Northing: " << gps.Northing << std::endl;
     std::cout << "Easting: " << gps.Easting << std::endl;
     std::cout << "Height: " << gps.Height << std::endl;
-    
+
+    // unsigned char * CRC = (unsigned char*)&gps.CRC; 
+	// start = headerLength + CRC_INDEX;
+	// for (int i = start; i < start + sizeof(int); i++) { 
+	// 	*(CRC++) = Data[i]; 
+	// }
+
+    std::cout << "CRC from string is: " << gps.CRC << std::endl;
+
+    // unsigned char * CheckSumData;
+    // for (int i = 0; i < 108; i++) {
+    //     CheckSumData[i] = Data[i];
+    // }
+
+    unsigned long CRCCalc = CalculateBlockCRC32(108,Buffer);
+
+   
+    std::cout << "CRC calculated is: " << CRCCalc << std::endl;
 }
 
 int GPSConnect() {

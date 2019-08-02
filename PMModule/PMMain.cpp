@@ -9,6 +9,8 @@ int startProcess(char* str);
 
 int waitCount[NUM_PROCESSES];
 
+unsigned char PROCESSES[NUM_PROCESSES][25] = {"bin/pm","bin/gps","bin/lsr","bin/dm","bin/xbox","bin/vcl"};
+
 int main(int argc, char* argv[])
 {
     // Set all wait counts to zero
@@ -27,9 +29,12 @@ int main(int argc, char* argv[])
 //Beginning LaserMain
     //int val2 = startProcess((char*)"bin/display.sh");
    // int val = startProcess((char*)"bin/laser.sh");
-    int val = startProcess((char*)"bin/lsr");
-    int val2 = startProcess((char*)"bin/dm");
-    int val3 = startProcess((char*)"bin/gps");
+    // int val = startProcess((char*)"bin/lsr");
+    // int val2 = startProcess((char*)"bin/dm");
+    // int val3 = startProcess((char*)"bin/gps");
+    for (int i = 0; i < NUM_PROCESSES-1; i++) { // TAKE AWAY -1 for VEHICLE RUNNING
+        startProcess((char*)PROCESSES[i+1]);
+    }
 
 //PM
     PMPtr = (PM *)SMpm;
@@ -39,11 +44,15 @@ int main(int argc, char* argv[])
     printf("Setting shutdown status: %d\n",PMPtr->Shutdown.Status);
     long int ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
     std::cout << "Time before sleep: " << ms << std::endl;
-    usleep(200000);
+    usleep(2000000);
     
     while(!PMPtr->Shutdown.Flags.PM) { 
         if (duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count() - ms > 1000) {
-            printf("Laser Heartbeat: %d\n",PMPtr->Heartbeats.Flags.Laser);
+            std::bitset<8> x(PMPtr->Heartbeats.Status);
+            std::cout << "Heartbeats: " << x << std::endl;
+            std::bitset<8> y(PMPtr->Shutdown.Status);
+            std::cout << "Shutdowns: " << y << std::endl;
+            //printf("Laser Heartbeat: %d\n",PMPtr->Heartbeats.Flags.Laser);
             ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
         }
         
@@ -55,7 +64,7 @@ int main(int argc, char* argv[])
         } else { //Wait more, check again     
             if (++waitCount[LSR_INDX] > BUFFER_TIME) {
                 printf("LSR Heartbeat not reset\n");
-                PMPtr->Shutdown.Status = 0xFF;
+                PMPtr->Shutdown.Status = 0xFF; // Laser considered critical
             }
         }
         if (PMPtr->Heartbeats.Flags.GPS == 1) {
@@ -73,6 +82,15 @@ int main(int argc, char* argv[])
         } else { //Wait more, check again     
             if (++waitCount[DISP_INDX] > BUFFER_TIME) {
                 printf("Display Heartbeat not reset\n");
+                PMPtr->Shutdown.Status = 0xFF;
+            }
+        }
+        if (PMPtr->Heartbeats.Flags.Xbox == 1) {
+            waitCount[XBOX_INDX] = 0;
+            PMPtr->Heartbeats.Flags.Xbox = 0;
+        } else { //Wait more, check again     
+            if (++waitCount[XBOX_INDX] > BUFFER_TIME) {
+                printf("Xbox Heartbeat not reset\n");
                 PMPtr->Shutdown.Status = 0xFF;
             }
         }

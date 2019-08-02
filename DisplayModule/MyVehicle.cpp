@@ -137,14 +137,14 @@ MyVehicle::MyVehicle(PM* PMPtr)
 
 void MyVehicle::drawLaser()
 {
-
+	glTranslated(0.5,0,0);
 	glPushMatrix();
 	 //std::cout << "PMSMPtr -  X: " <<  PMSMPtr->XVals[i] << " Y: " << PMSMPtr->YVals[i] << std::endl;
 	std::cout << "X1: " << PMSMPtr->XVals[1] << " Y1: " << PMSMPtr->YVals[1] << std::endl;
 		for (int i = 0; i < 361; i++) {
 			glBegin(GL_LINES);
 			glColor3f(1,0,0);
-			glTranslatef(10,0,0);
+			
 			glVertex3f(PMSMPtr->XVals[i],0, PMSMPtr->YVals[i]);
     		glVertex3f(PMSMPtr->XVals[i], 1, PMSMPtr->YVals[i]);
 			glEnd();

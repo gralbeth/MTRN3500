@@ -3,13 +3,17 @@
 #include <kbhit.h>
 #include <iostream>
 
+#define WAIT_COUNT 50
+
+int waitCount;
+
 int main(int argc, char* argv[])
 {
     Laser* Lsrptr;
 	void* SMlsr;
     void* SMpm;
     PM* PMPtr; 
-
+    waitCount = 0;
 
     long int ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
     std::cout << "Laser opened at time: " << ms << std::endl;
@@ -28,7 +32,16 @@ int main(int argc, char* argv[])
     while(!PMPtr->Shutdown.Flags.Laser) {
    // while(true) {
         usleep(5000);
-        PMPtr->Heartbeats.Flags.Laser = 1;
+        if (PMPtr->Heartbeats.Flags.Laser) {
+            if (++waitCount > WAIT_COUNT) {
+                std::cout << "Laser shutting down PM" << std::cout;
+                PMPtr->Shutdown.Status = 0xFF; // PM Failure
+            }
+        } else {
+            waitCount = 0;
+            PMPtr->Heartbeats.Flags.Laser = 1;
+        }
+
         long int ms1 = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
         std::cout << "Pre laser time: " << ms1 << std::endl;
         lasRet = lsr.LaserOps();

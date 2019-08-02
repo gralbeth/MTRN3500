@@ -10,16 +10,19 @@
 #include <chrono>
 #include <iostream>
 #include <ctime>
+#include <bitset>
 
-#define LASER_KEY 1111
-#define PM_KEY 2222
+#define LASER_KEY 3333
+#define PM_KEY 4444
 #define BUFFER_TIME 400
 
-#define NUM_PROCESSES 4 // PM, GPS, Laser, Display
+#define NUM_PROCESSES 6 // PM, GPS, Laser, Display, Xbox, Vehicle TODO CHANGE TO 6
 #define PM_INDX 0
 #define GPS_INDX 1
 #define LSR_INDX 2
 #define DISP_INDX 3
+#define XBOX_INDX 4
+#define VEHICLE_INDX 5
 
 struct ModuleFlags
 {
@@ -46,6 +49,10 @@ struct PM {
 
     double XVals[361];
     double YVals[361];
+
+    double RemoteSteering;
+    double RemoteSpeed;
+
 };
 
 struct LaserData {

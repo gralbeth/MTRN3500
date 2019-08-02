@@ -5,8 +5,9 @@ PM := PMModule/PMMain.cpp
 LSR := LaserModule/*.cpp
 DM := DisplayModule/*.cpp
 GPS := GPSModule/*.cpp
+XBOX := XboxModule/*.cpp
 
-all: pmmain lsrmain dmmain gpsmain
+all: pmmain lsrmain dmmain gpsmain xboxmain
 
 pmmain: $(PM)
 	${CC} ${IDIR} ${CMN} $(PM) -o bin/pm -w
@@ -19,6 +20,9 @@ dmmain: ${DM}
 
 gpsmain: ${GPS}
 	${CC} ${GPS} ${IDIR} ${CMN} -o bin/gps -w
+
+xboxmain: ${XBOX}
+	$(CC) $(XBOX) $(IDIR) $(CMN) -o bin/xbox -w -lSDL2main -lSDL2
 
 clean:
 	rm -rvf *.out

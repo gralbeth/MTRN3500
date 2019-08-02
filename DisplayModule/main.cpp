@@ -42,6 +42,8 @@
 #include "Messages.hpp"
 #include "HUD.hpp"
 
+#define WAIT_COUNT 50
+
 void display();
 void reshape(int width, int height);
 void idle();
@@ -68,10 +70,11 @@ Vehicle * vehicle = NULL;
 double speed = 0;
 double steering = 0;
 PM* PMSMPtr;
+int waitCount;
 
 //int _tmain(int argc, _TCHAR* argv[]) {
 int main(int argc, char ** argv) {
-
+	waitCount = 0;
 
 //TODO add if not shutdown 
 	const int WINDOW_WIDTH = 800;
@@ -137,9 +140,7 @@ void display() {
 	// -------------------------------------------------------------------------
 	//  This method is the main draw routine. 
 	// -------------------------------------------------------------------------
-	std::cout << "PMSMPtr Shutdown Display Flag: " << (int)PMSMPtr->Shutdown.Flags.Display << std::endl;
-	if (!PMSMPtr->Shutdown.Flags.Display) {
-		PMSMPtr->Heartbeats.Flags.Display = 1;
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glMatrixMode(GL_MODELVIEW);
@@ -166,12 +167,7 @@ void display() {
 		HUD::Draw();
 
 		glutSwapBuffers();
-	}
-	else {
-	}
-	std::cout << "Exiting display" << std::endl;
-	//glutDestroyWindow(0);
-	//while(!kbhit());
+
 };
 
 void reshape(int width, int height) {
@@ -202,72 +198,87 @@ double getTime()
 }
 
 void idle() {
-
-	if (KeyManager::get()->isAsciiKeyPressed('a')) {
-		Camera::get()->strafeLeft();
-	}
-
-	if (KeyManager::get()->isAsciiKeyPressed('c')) {
-		Camera::get()->strafeDown();
-	}
-
-	if (KeyManager::get()->isAsciiKeyPressed('d')) {
-		Camera::get()->strafeRight();
-	}
-
-	if (KeyManager::get()->isAsciiKeyPressed('s')) {
-		Camera::get()->moveBackward();
-	}
-
-	if (KeyManager::get()->isAsciiKeyPressed('w')) {
-		Camera::get()->moveForward();
-	}
-
-	if (KeyManager::get()->isAsciiKeyPressed(' ')) {
-		Camera::get()->strafeUp();
-	}
-
-	speed = 0;
-	steering = 0;
-
-	if (KeyManager::get()->isSpecialKeyPressed(GLUT_KEY_LEFT)) {
-		steering = Vehicle::MAX_LEFT_STEERING_DEGS * -1;   
-	}
-
-	if (KeyManager::get()->isSpecialKeyPressed(GLUT_KEY_RIGHT)) {
-		steering = Vehicle::MAX_RIGHT_STEERING_DEGS * -1;
-	}
-
-	if (KeyManager::get()->isSpecialKeyPressed(GLUT_KEY_UP)) {
-		speed = Vehicle::MAX_FORWARD_SPEED_MPS;
-	}
-
-	if (KeyManager::get()->isSpecialKeyPressed(GLUT_KEY_DOWN)) {
-		speed = Vehicle::MAX_BACKWARD_SPEED_MPS;
-	}
-
-
-
-
 	const float sleep_time_between_frames_in_seconds = 0.025;
 
-	static double previousTime = getTime();
-	const double currTime = getTime();
-	const double elapsedTime = currTime - previousTime;
-	previousTime = currTime;
+	std::cout << "PMSMPtr Shutdown Display Flag: " << (int)PMSMPtr->Shutdown.Flags.Display << std::endl;
+	if (!PMSMPtr->Shutdown.Flags.Display) {
+		if (PMSMPtr->Heartbeats.Flags.Display) {
+            if (++waitCount > WAIT_COUNT) {
+				std::cout << "Display shutting down PM" << std::cout;
+				PMSMPtr->Shutdown.Status = 0xFF; // PM Failure
+			}
+        } else {
+			waitCount = 0;
+			PMSMPtr->Heartbeats.Flags.Display = 1;
+		}
 
-	// do a simulation step
-	if (vehicle != NULL) {
-		vehicle->update(speed, steering, elapsedTime);
+		if (KeyManager::get()->isAsciiKeyPressed('a')) {
+			Camera::get()->strafeLeft();
+		}
+
+		if (KeyManager::get()->isAsciiKeyPressed('c')) {
+			Camera::get()->strafeDown();
+		}
+
+		if (KeyManager::get()->isAsciiKeyPressed('d')) {
+			Camera::get()->strafeRight();
+		}
+
+		if (KeyManager::get()->isAsciiKeyPressed('s')) {
+			Camera::get()->moveBackward();
+		}
+
+		if (KeyManager::get()->isAsciiKeyPressed('w')) {
+			Camera::get()->moveForward();
+		}
+
+		if (KeyManager::get()->isAsciiKeyPressed(' ')) {
+			Camera::get()->strafeUp();
+		}
+
+		speed = 0;
+		steering = 0;
+
+		if (KeyManager::get()->isSpecialKeyPressed(GLUT_KEY_LEFT)) {
+			steering = Vehicle::MAX_LEFT_STEERING_DEGS * -1;   
+		}
+
+		if (KeyManager::get()->isSpecialKeyPressed(GLUT_KEY_RIGHT)) {
+			steering = Vehicle::MAX_RIGHT_STEERING_DEGS * -1;
+		}
+
+		if (KeyManager::get()->isSpecialKeyPressed(GLUT_KEY_UP)) {
+			speed = Vehicle::MAX_FORWARD_SPEED_MPS;
+		}
+
+		if (KeyManager::get()->isSpecialKeyPressed(GLUT_KEY_DOWN)) {
+			speed = Vehicle::MAX_BACKWARD_SPEED_MPS;
+		}
+
+		static double previousTime = getTime();
+		const double currTime = getTime();
+		const double elapsedTime = currTime - previousTime;
+		previousTime = currTime;
+
+		// do a simulation step
+		if (vehicle != NULL) {
+			vehicle->update(speed, steering, elapsedTime);
+		}
+
+		display();
+	} else {
+		std::cout << "Exiting display" << std::endl;
+		//glutDestroyWindow(0);
+		exit(0);		
 	}
 
-	display();
+	#ifdef _WIN32 
+		Sleep(sleep_time_between_frames_in_seconds * 1000);
+	#else
+		usleep(sleep_time_between_frames_in_seconds * 1e6);
+	#endif
+	
 
-#ifdef _WIN32 
-	Sleep(sleep_time_between_frames_in_seconds * 1000);
-#else
-	usleep(sleep_time_between_frames_in_seconds * 1e6);
-#endif
 };
 
 void keydown(unsigned char key, int x, int y) {

@@ -65,14 +65,7 @@ int main(int argc , char *argv[])
     lsr.closeSock(); 
     lsr.polarToXY(); // Polar to XY cartesian
     lsr.printVals(5);
-  
-   
-    // Vals array now holds polar values
-
-
-   // std::istringstream ss(server_reply);
-   // std::cout << ss.str() << std::endl;
-     
+    
     return 0;
 }
 
