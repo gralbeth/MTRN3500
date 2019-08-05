@@ -51,9 +51,7 @@ void GPSOps(int sock) {
     }
 
     std::cout << "Size of GPSData: " << sizeof(GPSData) << std::endl;
-    std::cout << "Northing: " << gps.Northing << std::endl;
-    std::cout << "Easting: " << gps.Easting << std::endl;
-    std::cout << "Height: " << gps.Height << std::endl;
+    std::cout << "Readings - Northing: " << gps.Northing << "\tEasting: " << gps.Easting << "\tHeight: " << gps.Height << std::endl;
 
     // unsigned char * CRC = (unsigned char*)&gps.CRC; 
 	// start = headerLength + CRC_INDEX;
@@ -72,6 +70,7 @@ void GPSOps(int sock) {
 
    
     std::cout << "CRC calculated is: " << CRCCalc << std::endl;
+    
 }
 
 int GPSConnect() {

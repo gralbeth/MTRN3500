@@ -11,8 +11,7 @@ int waitCount[NUM_PROCESSES];
 
 unsigned char PROCESSES[NUM_PROCESSES][25] = {"bin/pm","bin/gps","bin/lsr","bin/dm","bin/xbox","bin/vcl"};
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     // Set all wait counts to zero
     for (int i = 0; i < NUM_PROCESSES; i++) {
         waitCount[i] = 0;
@@ -73,7 +72,8 @@ int main(int argc, char* argv[])
         } else { //Wait more, check again     
             if (++waitCount[GPS_INDX] > BUFFER_TIME) {
                 printf("GPS Heartbeat not reset\n");
-                PMPtr->Shutdown.Status = 0xFF;
+                PMPtr->Shutdown.Flags.GPS = 1; // not critical
+                startProcess((char*)Processes[GPS_INDX]);
             }
         }
         if (PMPtr->Heartbeats.Flags.Display== 1) {
@@ -82,7 +82,8 @@ int main(int argc, char* argv[])
         } else { //Wait more, check again     
             if (++waitCount[DISP_INDX] > BUFFER_TIME) {
                 printf("Display Heartbeat not reset\n");
-                PMPtr->Shutdown.Status = 0xFF;
+                PMPtr->Shutdown.Flags.Display = 1; // not critical
+                startProcess((char*)Processes[DISP_INDX]);
             }
         }
         if (PMPtr->Heartbeats.Flags.Xbox == 1) {
@@ -94,7 +95,12 @@ int main(int argc, char* argv[])
                 PMPtr->Shutdown.Status = 0xFF;
             }
         }
-
+        // for (int i = 1; i < NUM_PROCESSES; i++) { TODO
+        //     if (PMPtr->Shutdown.Flags.[i] == 1) {
+        //         startProcess((char*)PROCESSES[i+1]);
+        //     }
+        // }
+        
         if (kbhit()) {
             getchar();
             printf("Key hit\n");
@@ -105,11 +111,7 @@ int main(int argc, char* argv[])
 
     printf("Process Management terminated normally\n");
 
-	// int detRet = shmdt(SMlsr);
-    // if (detRet != 0) {
-    //     printf("SMlsr detach failed\n");
-    // }
-    // shmctl(LASER_KEY, IPC_RMID, NULL);
+	
     int detRet = shmdt(SMpm);
     if (detRet != 0) {
         printf("SMpm detach failed\n");

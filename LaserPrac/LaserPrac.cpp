@@ -97,7 +97,6 @@ Laser::Laser(std::string ip_addr,int portNum) {
      
     printf("Connected\n");
 }
-   
 
 bool Laser::getDataPacket() {
  

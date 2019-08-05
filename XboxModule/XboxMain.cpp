@@ -1,14 +1,5 @@
-#include <structs.h>
-#include "SDL2/SDL.h"
-#include <iostream>
-
-
-#define WAIT_COUNT 200
-
-//Analog joystick dead zone
-const int JOYSTICK_DEAD_ZONE = 8000;
-bool XboxInit();
-
+#include "Xbox.h"
+ 
 using namespace std;
 
 int waitCount;
@@ -21,11 +12,33 @@ int main() {
     std::cout << "Entered XboxMain" << std::endl;
     usleep(10000);
     SMpm = SMCreate(PM_KEY,sizeof(PM));
+    int numGamepads;
 // Read from SM
     PMPtr = (PM*)SMpm;
 
+    SDL_Joystick *joy;
+    SDL_Event event;
 
-    SDL_GameController* Controller;
+    // Initialize the joystick subsystem
+    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+    // Enable for events
+    SDL_JoystickEventState(SDL_ENABLE);
+
+    // Check for joystick
+    if (SDL_NumJoysticks() > 0) {
+        // Open joystick
+        joy = SDL_JoystickOpen(0);
+
+        if (joy) {
+            printf("Opened Joystick 0\n");
+            printf("Name: %s\n", SDL_JoystickNameForIndex(0));
+            printf("Number of Axes: %d\n", SDL_JoystickNumAxes(joy));
+            printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(joy));
+            printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joy));
+        } else {
+            printf("Couldn't open Joystick 0\n");
+        }
+    }
 
     while(!PMPtr->Shutdown.Flags.Xbox) {
         usleep(500000); 
@@ -40,26 +53,78 @@ int main() {
             waitCount = 0;
         }
         std::cout << "Post heartbeat "  << std::endl;
-        //Initialise controller
-        SDL_Init(SDL_INIT_GAMECONTROLLER);
-        int JoystickIndex = SDL_NumJoysticks();
-        int ControllerIndex = 0;
-        if (!SDL_IsGameController(JoystickIndex)) {
-            std::cout << "No joystick" << std::endl;
+
+        while(SDL_PollEvent(&event)) {  
+                switch(event.type){  
+                    case SDL_KEYDOWN:
+                    /* handle keyboard stuff here */				
+                    break;
+
+                    case SDL_QUIT:
+                    /* Set whatever flags are necessary to */
+                    /* end the main game loop here */
+                    break;
+
+                    case SDL_JOYBUTTONDOWN:  /* Handle Joystick Button Presses */
+                        switch(event.jbutton.button) {
+                            case SDL_CONTROLLER_BUTTON_X:
+                                std::cout << "Shutting down" << std::endl;
+                                PMPtr->Shutdown.Flags.Xbox = 1; // Shutdown xbox 
+                        }
+                        
+                        if ( event.jbutton.button == 0 ) {
+                        std::cout << "Button zero" << std::endl;
+                            /* code goes here */
+                        }
+                        std::cout << "Button: " << (int)event.jbutton.button << std::endl;
+                    break;
+
+                    case SDL_JOYAXISMOTION:  /* Handle Joystick Motion */
+
+                            switch(event.jaxis.axis) {
+                                // case 0: //Left joystick L/R 
+                                // std::cout << "Left/Right axis value is: " << event.jaxis.value << std::endl;
+
+                                case 1: //Left joystick U/D = SPEED
+                                std::cout << "Up/Down axis value is: " << event.jaxis.value << std::endl;
+                                    if ( ( event.jaxis.value < -JOY_DEADZONE ) || (event.jaxis.value > JOY_DEADZONE ) ) 
+                                    {
+                                        PMPtr->RemoteSpeed = -event.jaxis.value/(pow(2,15));
+                                        
+                                    } else {
+                                        PMPtr->RemoteSpeed = 0;
+                                    }
+                                    std::cout << "Ptr remoteSpeed = " << PMPtr->RemoteSpeed << std::endl;
+                                break;
+                                case 2: //Right joystick L/R = STEERING
+                                std::cout << "Left/Right axis value is: " << event.jaxis.value << std::endl;
+                                    if ( ( event.jaxis.value < -JOY_DEADZONE ) || (event.jaxis.value > JOY_DEADZONE ) ) 
+                                    {
+                                         PMPtr->RemoteSteering = 40.0*event.jaxis.value/(pow(2,15));
+                                    } else {
+                                        PMPtr->RemoteSteering = 0;
+                                    }
+                                    std::cout << "Ptr remoteSteering = " << PMPtr->RemoteSteering << std::endl;
+                                break;
+                                // case 3: //Right joystick U/D
+                                // std::cout << "Up/Down axis value is: " << event.jaxis.value << std::endl;
+                            } 
+                    break;
+                }
         }
-        Controller = SDL_GameControllerOpen(JoystickIndex);
-        
-        // Operations on open controllers
-        bool IsAPressed = SDL_GameControllerGetButton(Controller, SDL_CONTROLLER_BUTTON_A);
-        std::cout << "A is pressed? " << IsAPressed << std::endl;
-       
+        if (kbhit()) {
+            break;
+        }
     }
-    if (Controller) 
-        SDL_GameControllerClose(Controller);
-   
-    return 0;
-}
-
-bool XboxInit() {
-
+              // Close if opened
+    if (SDL_JoystickGetAttached(joy)) {
+        SDL_JoystickClose(joy);
+    }
+    std::cout << "Shutdown status high" << std::endl;
+    int detRet = shmdt(SMpm);
+    if (detRet != 0) {
+        std::cout << "SMpm detach failed" << std::endl;
+    }
+    shmctl(PM_KEY, IPC_RMID, NULL); 
+	return 0;
 }

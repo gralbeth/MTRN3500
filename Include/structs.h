@@ -29,9 +29,9 @@ struct ModuleFlags
 unsigned char PM:1,
 GPS:1,
 Laser:1,
+Display:1,
 Xbox:1,
 Vehicle:1,
-Display:1,
 Unused:2;
 };
 

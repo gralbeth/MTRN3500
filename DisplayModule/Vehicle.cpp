@@ -3,6 +3,9 @@
 
 Vehicle::Vehicle() {
 	speed = steering = 0;
+    SMpm = SMCreate(PM_KEY,sizeof(PM));
+    PMPtr = (PM*)SMpm;
+	PMPtr->RemoteSpeed = PMPtr->RemoteSteering = 0;
 };
 
 Vehicle::~Vehicle()
@@ -11,12 +14,17 @@ Vehicle::~Vehicle()
 
 void Vehicle::update(double dt)
 {
+	speed = PMPtr->RemoteSpeed;
+	steering = PMPtr->RemoteSteering;
+	//PMSMPtr->RemoteSpeed = clamp(MAX_BACKWARD_SPEED_MPS, PMSMPtr->RemoteSpeed, MAX_FORWARD_SPEED_MPS);
+	//PMSMPtr->RemoteSteering = clamp(MAX_BACKWARD_SPEED_MPS, PMSMPtr->RemoteSteering, MAX_FORWARD_SPEED_MPS);
 	speed = clamp(MAX_BACKWARD_SPEED_MPS, speed, MAX_FORWARD_SPEED_MPS);
 	steering = clamp(MAX_LEFT_STEERING_DEGS, steering, MAX_RIGHT_STEERING_DEGS);
 
-	// update position by integrating the speed
+	// update position by integrating the speed 
 	x += speed * dt * cos(rotation * 3.1415926535 / 180.0);
 	z += speed * dt * sin(rotation * 3.1415926535 / 180.0);
+	
 
 	// update heading
 	rotation += dt * steering * speed * 1.5;
@@ -29,11 +37,13 @@ void Vehicle::update(double dt)
 		speed = 0;
 	if(fabs(steering) < .1)
 		steering = 0;
-
 }
 
 void Vehicle::update(double speed_, double steering_, double dt) 
 {
+	speed = PMPtr->RemoteSpeed;
+	steering = PMPtr->RemoteSteering;
+	
 	speed = speed + ((speed_) - speed)*dt*4;
 	steering = steering + (steering_ - steering)*dt * 6;
 

@@ -25,6 +25,12 @@ int main() {
         GPSOps(sock);
     }
     GPSDisconnect(sock);
+    int detRet = shmdt(SMpm);
+    if (detRet != 0) {
+        std::cout << "SMpm detach failed" << std::endl;
+    }
+    shmctl(PM_KEY, IPC_RMID, NULL); 
+
     return 0;
 }
 

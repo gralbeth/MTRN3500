@@ -6,6 +6,7 @@
 #include "Shape.hpp"
 #include "VectorMaths.hpp"
 #include <vector>
+#include <structs.h>
 
 class Vehicle : public Shape {
 public:
@@ -26,6 +27,10 @@ public:
 
 	double getSpeed() const { return speed; }
 	double getSteering() const { return steering; }
+
+		// Shared memory setup
+	void* SMpm;
+    PM* PMPtr; 
 
 protected:
 	double speed;     // m/s

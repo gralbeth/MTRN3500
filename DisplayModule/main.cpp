@@ -262,7 +262,8 @@ void idle() {
 
 		// do a simulation step
 		if (vehicle != NULL) {
-			vehicle->update(speed, steering, elapsedTime);
+			//vehicle->update(speed, steering, elapsedTime);
+			vehicle->update(PMSMPtr->RemoteSpeed, PMSMPtr->RemoteSteering, elapsedTime);
 		}
 
 		display();
