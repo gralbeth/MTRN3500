@@ -99,8 +99,6 @@ Laser::Laser(std::string ip_addr,int portNum) {
 }
 
 bool Laser::getDataPacket() {
- 
-    //Create socket
     
     // Verify connection via student number
     const char studentNumber[9] = "5061927\n";

@@ -115,6 +115,7 @@ int main(int argc, char ** argv) {
 	PMPtr = (PM*)SMpm;
 	PMSMPtr = PMPtr;
 
+	PMPtr->Shutdown.Flags.Display = 0;
 	vehicle = new MyVehicle(PMPtr);
 
 	// for (int i = 0; i < 361; i++) { //Save from SM to MyVehicle class for access in drawing

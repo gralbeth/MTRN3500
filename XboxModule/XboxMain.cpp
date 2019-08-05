@@ -15,6 +15,7 @@ int main() {
     int numGamepads;
 // Read from SM
     PMPtr = (PM*)SMpm;
+	PMPtr->Shutdown.Flags.Xbox = 0;
 
     SDL_Joystick *joy;
     SDL_Event event;
@@ -69,7 +70,7 @@ int main() {
                         switch(event.jbutton.button) {
                             case SDL_CONTROLLER_BUTTON_X:
                                 std::cout << "Shutting down" << std::endl;
-                                PMPtr->Shutdown.Flags.Xbox = 1; // Shutdown xbox 
+                                PMPtr->Shutdown.Status = 0xFF; // Shutdown xbox 
                         }
                         
                         if ( event.jbutton.button == 0 ) {

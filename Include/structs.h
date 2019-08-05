@@ -14,15 +14,14 @@
 
 #define LASER_KEY 3333
 #define PM_KEY 4444
-#define BUFFER_TIME 400
+#define BUFFER_TIME 160
 
-#define NUM_PROCESSES 6 // PM, GPS, Laser, Display, Xbox, Vehicle TODO CHANGE TO 6
-#define PM_INDX 0
-#define GPS_INDX 1
-#define LSR_INDX 2
-#define DISP_INDX 3
-#define XBOX_INDX 4
-#define VEHICLE_INDX 5
+#define NUM_PROCESSES 5 // PM, GPS, Laser, Display, Xbox, Vehicle TODO CHANGE TO 6
+#define GPS_INDX 0
+#define LSR_INDX 1
+#define DISP_INDX 2
+#define XBOX_INDX 3
+#define VEHICLE_INDX 4
 
 struct ModuleFlags
 {
@@ -43,15 +42,14 @@ ModuleFlags Flags;
 };
 
 struct PM {
-    ExecFlags Shutdown;
-    //Timestamps Tstamps;
-    ExecFlags Heartbeats;
+    ExecFlags Shutdown; //Array of shutdown flags for modules
+    ExecFlags Heartbeats; //Array of heartbeat flags for modules
 
-    double XVals[361];
-    double YVals[361];
+    double XVals[361]; //Laser Xvalues
+    double YVals[361]; //Laser Yvalues
 
-    double RemoteSteering;
-    double RemoteSpeed;
+    double RemoteSteering; //Xbox Steering between +-40
+    double RemoteSpeed; //Xbox speed between +-1
 
 };
 

@@ -9,7 +9,7 @@ int startProcess(char* str);
 
 int waitCount[NUM_PROCESSES];
 
-unsigned char PROCESSES[NUM_PROCESSES][25] = {"bin/pm","bin/gps","bin/lsr","bin/dm","bin/xbox","bin/vcl"};
+unsigned char PROCESSES[NUM_PROCESSES][25] = {"bin/gps","bin/lsr","bin/dm","bin/xbox","bin/vcl"};
 
 int main(int argc, char* argv[]) {
     // Set all wait counts to zero
@@ -31,8 +31,8 @@ int main(int argc, char* argv[]) {
     // int val = startProcess((char*)"bin/lsr");
     // int val2 = startProcess((char*)"bin/dm");
     // int val3 = startProcess((char*)"bin/gps");
-    for (int i = 0; i < NUM_PROCESSES-1; i++) { // TAKE AWAY -1 for VEHICLE RUNNING
-        startProcess((char*)PROCESSES[i+1]);
+    for (int i = 0; i < NUM_PROCESSES; i++) { // TAKE AWAY -1 for VEHICLE RUNNING
+        startProcess((char*)PROCESSES[i]);
     }
 
 //PM
@@ -73,7 +73,8 @@ int main(int argc, char* argv[]) {
             if (++waitCount[GPS_INDX] > BUFFER_TIME) {
                 printf("GPS Heartbeat not reset\n");
                 PMPtr->Shutdown.Flags.GPS = 1; // not critical
-                startProcess((char*)Processes[GPS_INDX]);
+                startProcess((char*)PROCESSES[GPS_INDX]);
+                waitCount[GPS_INDX] = 0;
             }
         }
         if (PMPtr->Heartbeats.Flags.Display== 1) {
@@ -83,7 +84,8 @@ int main(int argc, char* argv[]) {
             if (++waitCount[DISP_INDX] > BUFFER_TIME) {
                 printf("Display Heartbeat not reset\n");
                 PMPtr->Shutdown.Flags.Display = 1; // not critical
-                startProcess((char*)Processes[DISP_INDX]);
+                startProcess((char*)PROCESSES[DISP_INDX]);
+                waitCount[DISP_INDX] = 0;
             }
         }
         if (PMPtr->Heartbeats.Flags.Xbox == 1) {
@@ -92,6 +94,15 @@ int main(int argc, char* argv[]) {
         } else { //Wait more, check again     
             if (++waitCount[XBOX_INDX] > BUFFER_TIME) {
                 printf("Xbox Heartbeat not reset\n");
+                PMPtr->Shutdown.Status = 0xFF;
+            }
+        }
+        if (PMPtr->Heartbeats.Flags.Vehicle == 1) {
+            waitCount[VEHICLE_INDX] = 0;
+            PMPtr->Heartbeats.Flags.Vehicle = 0;
+        } else { //Wait more, check again     
+            if (++waitCount[VEHICLE_INDX] > BUFFER_TIME) {
+                printf("Vehicle Heartbeat not reset\n");
                 PMPtr->Shutdown.Status = 0xFF;
             }
         }

@@ -10,8 +10,8 @@ int main() {
     PM* PMPtr; 
     waitCount = 0;
     SMpm = SMCreate(PM_KEY,sizeof(PM));
-// Read from SM
     PMPtr = (PM*)SMpm;
+	PMPtr->Shutdown.Flags.GPS = 0;
     int sock = GPSConnect();
 
     while (!PMPtr->Shutdown.Flags.GPS) {

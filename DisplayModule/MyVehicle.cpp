@@ -137,7 +137,7 @@ MyVehicle::MyVehicle(PM* PMPtr)
 
 void MyVehicle::drawLaser()
 {
-	glTranslated(0.5,0,0);
+	glTranslated(0.6,0,0);
 	glPushMatrix();
 	 //std::cout << "PMSMPtr -  X: " <<  PMSMPtr->XVals[i] << " Y: " << PMSMPtr->YVals[i] << std::endl;
 	std::cout << "X1: " << PMSMPtr->XVals[1] << " Y1: " << PMSMPtr->YVals[1] << std::endl;
